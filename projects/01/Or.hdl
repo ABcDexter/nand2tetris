@@ -15,5 +15,10 @@ CHIP Or {
 
     PARTS:
     // Put your code here:
-    Or (a=a, b=b, out=out);
+    Nand (a=a, b=a, out=NOTa);
+    Nand (a=b, b=b, out=NOTb);
+    //Nand (a=NOTa, b=NOTb, out=NOTaNANDNOTb);
+    //Nand (a=NOTaNANDNOTb, b=NOTaNANDNOTb, out=NOTaANDNOTb);
+    //Nand (a=NOTaANDNOTb, b=NOTaANDNOTb, out=out);
+    Nand (a=NOTa, b=NOTb, out=out);
 }
