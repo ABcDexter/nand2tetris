@@ -43,4 +43,10 @@ CHIP ALU {
 
     PARTS:
    // Put you code here:
+   Not (in= zx, out=NOTzx);
+   And (a=NOTzx, b=x, out=newX);
+
+   Not (in= nx, out=NOTnx);
+   And (a=NOTnx, b=newX, out=newX);
+
 }
