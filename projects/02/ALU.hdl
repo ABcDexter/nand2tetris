@@ -43,10 +43,31 @@ CHIP ALU {
 
     PARTS:
    // Put you code here:
-   Not (in= zx, out=NOTzx);
-   And (a=NOTzx, b=x, out=newX);
+   //Not (in= nx, out=NOTnx);
 
-   Not (in= nx, out=NOTnx);
-   And (a=NOTnx, b=newX, out=newX);
+   Mux16 (a=x, b=false, sel=zx, out=x0); // 0 as per zx
+   
+   Not16 (in=x0, out=flipx0);
+   Mux16 (a=x0, b=flipx0, sel=nx, out=x1); // !x as per nx
+   
+   Mux16 (a=y, b=false, sel=zy, out=y0); // 0 as per zy
+   
+   Not16 (in=y0, out=flipy0);
+   Mux16 (a=y0, b=flipy0, sel=ny, out=y1); // !y as per ny
 
+   Add16 (a=x1, b=y1, out=x1ADDy1); 
+   And16 (a=x1, b=y1, out=x1ANDy1);
+   Mux16 (a=x1ANDy1, b=x1ADDy1, sel=f, out=fOut); // x&y or x+y as per f
+
+   Not16 (in=fOut, out=flipfOut);
+   Mux16 (a=fOut, b=flipfOut, sel=no, out=finalOut); // !fOut as per no
+   
+   Or16 (a=finalOut, b=finalOut, out=out); // out16
+   
+   Or16Way (in=finalOut, out=zeroOrOne); // if output is 0, zeroOrOne is 0
+   Mux (a=true, b=false, sel=zeroOrOne, out=zr); // zr whether output is 0
+
+   IsNeg16 (in=finalOut, out=negOrNot);
+   Mux (a=false, b=true, sel=negOrNot, out=ng); // ng where output is -ive
+   
 }

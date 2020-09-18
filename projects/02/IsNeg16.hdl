@@ -1,0 +1,18 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/02/IsNeg16.hdl
+
+/**
+ * 16-way Negative or not: 
+ * out = (in[15] AND 1 )
+ */
+
+CHIP IsNeg16 {
+    IN in[16];
+    OUT out;
+
+    PARTS:
+    // Put your code here:
+    And (a=true, b=in[15], out=out);
+}
