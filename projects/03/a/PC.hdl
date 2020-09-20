@@ -17,4 +17,8 @@ CHIP PC {
 
     PARTS:
     // Put your code here:
+    Inc16 (in=in, out=inAdded1);
+    Register (in=in, load=load, out=inSaved);
+        
+    //Mux4Way16 (a=);
 }
