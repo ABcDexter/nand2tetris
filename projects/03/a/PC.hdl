@@ -17,8 +17,17 @@ CHIP PC {
 
     PARTS:
     // Put your code here:
-    Inc16 (in=in, out=inAdded1);
-    Register (in=in, load=load, out=inSaved);
-        
-    //Mux4Way16 (a=);
+
+    Inc16 (in=output, out=outAdded1);
+    Mux16 (a=output, b=outAdded1, sel=inc, out=outMUXInced);    
+    
+    Mux16 (a=outMUXInced, b=in, sel=load, out=loaded);    
+
+    Mux16 (a=loaded, b[0..15]=false, sel=reset, out=reseted); //inTimeT);
+    
+    // Mux16 (a=output, b=);
+    
+    Register (in=reseted, load=true, out=out, out=output);
+    
+
 }
