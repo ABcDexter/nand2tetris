@@ -40,4 +40,51 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+    //    Mux16(a= , b= , sel= , out=);
+    //    ARegister(in= , load= , out= );
+    //    DRegister(in= , load= , out= );
+    //    ALU(x= , y= , zx= , nx= , zy=  ,ny= ,f= , no=, out= , zr=, ng= );
+    //    PC(in= , load= , inc= , reset=reset, out= );
+    //  basic gates
+
+    // C ins and A ins	
+    Not(in=instruction[15], out=aIns);
+    Mux16(a=ALUout, b=instruction, sel=aIns, out=insMUXout);
+
+    And(a=instruction[15], b=instruction[12], out=selAorM); //if the bit is set, then writeA
+    Or(a=aIns, b=instruction[5], out=loadA);
+
+    ARegister(in=insMUXout, load=loadA, out=Aregout, out[0..14]=addressM);  //15 bits of the M reg come from here
+    Mux16(a=Aregout, b=inM, sel=selAorM, out=AmuxM);
+    
+
+    //ALU logic
+    ALU(x=Dregout , y=AmuxM , zx=instruction[11] , nx=instruction[10] , zy=instruction[9]  ,ny=instruction[8] ,f=instruction[7] , no=instruction[6], out=ALUout, out=outM, zr=ALUzr, ng=ALUng );
+    
+    And(a=instruction[4], b=instruction[15], out=loadD);
+    DRegister(in=ALUout , load=loadD, out=Dregout);
+
+    //Mux16(a=ALUout , b=instruction, sel= , out=ALUoutMUXins);
+    //Mux16(a=Aregout , b=inM , sel= , out=AregoutMUXinM);
+
+    //ALU dest
+    And(a=instruction[3], b=instruction[15], out=writeM);
+
+    Not(in=ALUng,out=pos);
+    Not(in=ALUzr,out=nzr);
+    And(a=instruction[15],b=instruction[0],out=JGT);
+    And(a=pos,b=nzr,out=posnzr);
+    And(a=JGT,b=posnzr,out=load1);
+
+    And(a=instruction[15],b=instruction[1],out=JEQ);
+    And(a=JEQ,b=ALUzr,out=load2);
+
+    And(a=instruction[15],b=instruction[2],out=JLT);
+    And(a=JLT,b=ALUng,out=load3);
+
+    Or(a=load1,b=load2,out=loadtmp);
+    Or(a=load3,b=loadtmp,out=jump);
+
+    PC(in=Aregout,load=jump,inc=true,reset=reset,out[0..14]=pc);
+    
 }
