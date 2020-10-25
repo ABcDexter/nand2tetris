@@ -4,14 +4,13 @@ using namespace std;
 
 //string symbols()
 
-
 string asm2bin(string &inp){
 	string ans;
 	int len = inp.size();
 	cout <<"INPUT : "<< inp <<endl;
 	if (inp[0] == '@') // A ins
-	{	// A instructions start with 1
-		ans += '1';
+	{	// A instructions start with 0 opcode
+		ans += '0';
 		string addr ; 
 		for(int i=1; i<len; i++)
 		{ 
@@ -25,7 +24,7 @@ string asm2bin(string &inp){
 		
 	}
 	else  // C ins
-	{	// C instructions start with 111
+	{	// C instructions start with 111 opcode
 		ans += "111"; //012	//3 4  5  6  7  8  9    10 11 12   13 14 15
 		ans += "0000000000000"; //a c1 c2 c3 c4 c5 c6 = d1 d2 d3 ; j1 j2 j3
 		
@@ -61,15 +60,15 @@ string asm2bin(string &inp){
 		iter +=1;		
 			string comp;
 			for (; iter<len ; iter++){
-				if ( (inp[iter] == ';') || (inp[iter] == '\n' ))
+				if ( (inp[iter] == ';') || (inp[iter] == 10 ) || (inp[iter] == 13)) //newline
 					break;
 				else
 					comp += inp[iter];
 			}
-			cout << "comp is " << comp<<endl;
+			cout << "comp is :" << comp <<", length is :" << comp.size() <<endl;
 			//ans += "111"; //012	  //3  4  5  6  7  8  9   10 11 12   13 14 15
 			//ans += "0000000000000"; //a c1 c2 c3 c4 c5 c6 = d1 d2 d3 ; j1 j2 j3
-		
+			cout << "ans before comp : " << ans << endl;		
 		
 			if ( comp == "0") ans[4] = ans[6] = ans[8] = '1';
 
@@ -77,9 +76,9 @@ string asm2bin(string &inp){
 
 			if ( comp == "-1") ans[4] = ans[5] = ans[6] = ans[8] = '1';
 
-			if ( comp == "D") ans[6] = ans[7] = '1';
+			if ( comp == "D") {ans[6] = ans[7] = '1';  }
 
-			if ( comp == "A") ans[4] = ans[5] = '1';
+			if ( comp == "A") {ans[4] = ans[5] = '1'; cout<<"REEEEEEEEEEEEEEEEEEEEEEE"<<endl; }
 			if ( comp == "M") ans[3] = ans[4] = ans[5] = '1';
 
 			if ( comp == "!D") ans[6] = ans[7] = ans[9] = '1';		
@@ -87,35 +86,35 @@ string asm2bin(string &inp){
 			if ( comp == "!A") ans[4] = ans[5] = ans[9] = '1';
 			if ( comp == "!M") ans[3] = ans[4] = ans[5] = ans[9] = '1';		
 
-			if ( comp == "-D") ans[15] = '1';
+			if ( comp == "-D") ans[6] = ans[7] = ans[8] = ans[9] = '1';
 
-			if ( comp == "-A") ans[15] = '1';
-			if ( comp == "-M") ans[15] = '1';
+			if ( comp == "-A") ans[4] = ans[5] = ans[8] = ans[9] = '1';
+			if ( comp == "-M") ans[3] = ans[4] = ans[5] = ans[8] = ans[9] = '1';
 
-			if ( comp == "D+1") ans[15] = '1';
+			if ( comp == "D+1") ans[5] = ans[6] = ans[7] = ans[8] = ans[9] = '1';
 
-			if ( comp == "A+1") ans[15] = '1';
-			if ( comp == "M+1") ans[15] = '1';
+			if ( comp == "A+1") ans[4] = ans[5] = ans[7] = ans[8] = ans[9] = '1';
+			if ( comp == "M+1") ans[3] = ans[4] = ans[5] = ans[7] = ans[8] = ans[9] = '1';
 
-			if ( comp == "D-1") ans[15] = '1';
+			if ( comp == "D-1") ans[6] = ans[7] = ans[8] = '1';
 
-			if ( comp == "A-1") ans[15] = '1';
-			if ( comp == "M-1") ans[15] = '1';
+			if ( comp == "A-1") ans[4] = ans[5] = ans[8] = '1';
+			if ( comp == "M-1") ans[3] = ans[4] = ans[5] = ans[8] = '1';
 
-			if ( comp == "D+A") ans[15] = '1';
-			if ( comp == "D+M") ans[15] = '1';
+			if ( comp == "D+A") ans[8] = '1';
+			if ( comp == "D+M") ans[3] = ans[8] = '1';
 
-			if ( comp == "D-A") ans[15] = '1';
-			if ( comp == "D-M") ans[15] = '1';
+			if ( comp == "D-A") ans[8] = ans[9] = '1';
+			if ( comp == "D-M") ans[3] = ans[8] = ans[9] = '1';
 
-			if ( comp == "A-D") ans[15] = '1';
-			if ( comp == "M-D") ans[15] = '1';
+			if ( comp == "A-D") ans[7] = ans[8] = ans[9] = '1';
+			if ( comp == "M-D") ans[3] = ans[7] = ans[8] = ans[9] = '1';
 
-			if ( comp == "D&A") ans[15] = '1';
-			if ( comp == "D&M") ans[15] = '1';
+			//if ( comp == "D&A") //ans[3] = '0'; all are 0
+			if ( comp == "D&M") ans[3] = '1';
 
-			if ( comp == "D|A") ans[15] = '1';
-			if ( comp == "D|M") ans[15] = '1';
+			if ( comp == "D|A") ans[5] = ans[7] = ans[9] = '1';
+			if ( comp == "D|M") ans[3] = ans[5] = ans[7] = ans[9] = '1';
 		cout <<"COMP done!! ans so far : "<<ans<<endl <<" iter : inp[iter] = "<<iter<<":"<<inp[iter] <<"\n\n";
 				
 
