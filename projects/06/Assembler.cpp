@@ -30,14 +30,15 @@ map< string, int > symbolTable = {
 
 
 void parse(ifstream &asmFile, string const &fileName){
+	//vector< pair<string,int> > lineNum;
 		ofstream tempFile; // .temp file 
 		tempFile.open(fileName); // open the .temp file
 		string line;
-		
+		int count=0;
 		while( getline(asmFile, line))
 		{  		
 			cout << line << endl;
-			int n = line.size(); cout << "length of this line : " <<n<<endl;	
+			int n = line.size(); // cout << "length of this line : " <<n<<endl;	
 			string temp; 
 			for (int i = 0; i < n ; ++i)	
 			{
@@ -50,6 +51,7 @@ void parse(ifstream &asmFile, string const &fileName){
 			if ( temp.size() > 1){  //at least 2 characters
 				//cout<< typeid(temp).name()<<endl;
 		       		tempFile << temp << "\n";
+
 			}
 		}
 		tempFile.close();
@@ -57,23 +59,34 @@ void parse(ifstream &asmFile, string const &fileName){
 }
 
 void createSymbolTable(ifstream &openTempFile){
+	
 	cout <<"symbol Table creation. phase 1..............\n";
 		string line;
 		int lineNo = 0;
+		bool flagLabel = false;
 		while( getline(openTempFile, line))
 		{  	cout << line << endl;
-			int n = line.size(); cout << "length of this line : " <<n<<endl;	
+			flagLabel = false;
+			int n = line.size();  //cout << "length of this line : " <<n<<endl;	
 			string temp; 
 			for (int i = 0; i < n ; ++i)	
 			{
 				if (line[i] == '(')
 				{	i++;
+					flagLabel = true; //label found
 					while( line[i] != ')')
 						temp += line[i++];
 				}
 			}
-			symbolTable.insert({temp, lineNo}); 
-			lineNo++;		
+
+			if (! flagLabel)// if this line aint a label, increment counter
+				lineNo++;		
+			else
+			{ 	//if (temp[0]!='(')
+				//	lineNum[ 
+				symbolTable.insert({temp, lineNo}); 
+				cout<<"entered " <<temp <<":" <<lineNo  << " into symbol table"<<endl;			
+			}
 		}
 		openTempFile.close();
 //createSymbolTable done
@@ -119,7 +132,10 @@ string asm2bin(string &inp){
 			else
 				dest += inp[iter];
 		}
-		cout << "dest is " << dest<<endl;
+		if (inp[iter] == ';')
+			cout << "dest is NULL"<<endl;
+		else
+		{	cout << "dest is " << dest<<endl;
 			if ( dest == "M") ans[12] = '1';
 
 			if ( dest == "D") ans[11] = '1';
@@ -135,14 +151,17 @@ string asm2bin(string &inp){
 			if ( dest == "AMD") ans[10] = ans[11] = ans[12] = '1';
 
 			//default : //all are already 000
-
+		}
 		cout <<"DEST done!! ans so far : "<<ans<<endl<<" iter : inp[iter] = "<<iter<<":"<<inp[iter] <<"\n\n";
 		
 		// comp logic
 		string comp;
-		if (inp[iter] != ';' )
-		{ 	
+
+		if (inp[iter] == ';')
+			iter = 0;
+		else
 			iter +=1;		
+		// for setting right index of comp
 
 			for (; iter<len ; iter++){
 				if ( (inp[iter] == ';') || (inp[iter] == 10 ) || (inp[iter] == 13) || (inp[iter] ==32)) //newline or space
@@ -151,11 +170,10 @@ string asm2bin(string &inp){
 					comp += inp[iter];
 			}
 			cout << "comp is :" << comp <<", length is :" << comp.size() <<endl;
+			// For reference		
 			//ans += "111"; //012	  //3  4  5  6  7  8  9   10 11 12   13 14 15
 			//ans += "0000000000000"; //a c1 c2 c3 c4 c5 c6 = d1 d2 d3 ; j1 j2 j3
-		}	
-		else comp=dest;	
-
+		
 			cout << "ans before comp : " << ans << endl;		
 		
 			if ( comp == "0") ans[4] = ans[6] = ans[8] = '1';
@@ -302,14 +320,14 @@ int main(int argc, char **argv)
 
 	std::cout<<"Assembler!";
 	int i,n,t;
-
 	cout << "You have entered " << argc << " arguments:" << "\n"; 
-	for (i = 0; i < argc; ++i)
+	for ( i = 0; i < argc; ++i)
 		cout << argv[i] << "\n"; 
 	if (argc != 4){
 		cout<<" USAGE : ./assembler file_name1.asm file_name2.temp file_name3.hack "<<endl;
 		return 0;
 	}
+	//map<string, int> lineNum;
 
 	ifstream asmFile(argv[1]); // .asm file
 	if (asmFile.is_open())
@@ -324,12 +342,13 @@ int main(int argc, char **argv)
 	if (openTempFile.is_open())
 	{	
 		createSymbolTable(openTempFile); // create the symbolTable in the first pass and update the temp file by removing (LABELS)
-
-		tempToHack(string(argv[2]), string(argv[3]));  // convert the .temp file to .hack file using the rules of A ins and C ins
 		openTempFile.close();
+		tempToHack(string(argv[2]), string(argv[3]));  // convert the .temp file to .hack file using the rules of A ins and C ins
+
 	}
 	else
 		cout<< "Coulnt' open the temp file : "<< argv[2]<<endl;
+
 	printSymbolTable();
 	return 0;
 }
