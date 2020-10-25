@@ -2,37 +2,7 @@
 
 using namespace std;
 
-map< string, int > symbolTable = {
-	{ "R0", 0 },
-	{ "R1", 1 },
-	{ "R2", 2 },
-	{ "R3", 3 },
-	{ "R4", 4 },
-	{ "R5", 5 },
-	{ "R6", 6 },
-	{ "R7", 7 },
-	{ "R8", 8 },
-	{ "R9", 9 },
-	{ "R10", 10 },
-	{ "R11", 11 },
-	{ "R12", 12 },
-	{ "R13", 13 },
-	{ "R14", 14 },
-	{ "R15", 15 },
-	{ "SCREEN", 16384 },
-	{ "KBD", 24576 },
-	{ "SP", 1 },
-	{ "LCL", 1 },
-	{ "ARG", 2 },
-	{ "THIS", 3 },
-	{ "THAT", 4 }
-};
-
-void completeSymbolTable(){
-	int len = symbolTable.size();
-	for (auto iter:symbolTable) //.begin(); iter<symbolTable.end(); iter++)
-		cout<< iter.first << " : " << iter.second<<endl;
-}
+//string symbols()
 
 string asm2bin(string &inp){
 	string ans;
@@ -147,6 +117,7 @@ string asm2bin(string &inp){
 			if ( comp == "D|M") ans[3] = ans[5] = ans[7] = ans[9] = '1';
 		cout <<"COMP done!! ans so far : "<<ans<<endl <<" iter : inp[iter] = "<<iter<<":"<<inp[iter] <<"\n\n";
 				
+
 		if (inp[iter] == ';')
 		{		
 			// jump logic
@@ -180,27 +151,22 @@ string asm2bin(string &inp){
 }
 
 int main(int argc, char **argv)
-{	//completeSymbolTable();
-	ios_base::sync_with_stdio(false);
-	cin.tie(NULL); 
-	// falseIO	
+{
 	std::cout<<"Assembler!";
 	int i,n,t;
-
 	cout << "You have entered " << argc << " arguments:" << "\n"; 
 	for (i = 0; i < argc; ++i)
 		cout << argv[i] << "\n"; 
 
-	ifstream asmFile(argv[1]); // .asm file
-	
+	ifstream asmFile(argv[1]);
 	if (asmFile.is_open())
 	{
-		ofstream tempFile; // .temp file 
-		tempFile.open(argv[2]); // open the .temp file
 		string line;
-		
+		ofstream binFile;
+		binFile.open(argv[2]); //open the file given by argv
+
 		while( getline(asmFile, line))
-		{  		
+		{ 
 			cout << line << endl;
 			n = line.size(); cout << "length of this line : " <<n<<endl;	
 			string temp; 
@@ -211,73 +177,15 @@ int main(int argc, char **argv)
 				else
 					temp += line[i];
 			}
-			if ( temp.size() > 1){  //at least 2 characters
-				//cout<< typeid(temp).name()<<endl;
-		       		tempFile << temp << "\n";
-			}
+			if ( temp.size() > 1)  //at least 2 characters
+				binFile << asm2bin(temp) << "\n";
 		}
-		tempFile.close();
+		binFile.close();
+	
 	asmFile.close();
 	}
 	else
 		cout<< "Coulnt' open the file : "<< argv[1]<<endl;
 	
-	ifstream openTempFile(argv[2]); // opening .asm file
-	
-	if (openTempFile.is_open())
-	{	cout <<"beginning Parser. phase 1..............\n";
-		string line;
-		int lineNo = 0;
-		while( getline(openTempFile, line))
-		{  	lineNo++;
-			cout << line << endl;
-			n = line.size(); cout << "length of this line : " <<n<<endl;	
-			string temp; 
-			for (i = 0; i < n ; ++i)	
-			{
-				if (line[i] == '(')
-				{	i++;
-					while( line[i] != ')')
-						temp += line[i++];
-				}
-
-			}
-			symbolTable.insert({temp, lineNo}); 
-		}
-		openTempFile.close();
-
-		string sLine;
-		int nxt = 16;
-		ofstream binFile;
-		binFile.open(argv[3]); //open the .hack file given by argv
-		openTempFile.open(argv[2]);
-		while( getline(openTempFile, sLine))
-		{	cout <<"beginning Parser. phase 2..............\n";
-
-		  	cout << sLine << endl;
-			n = sLine.size(); cout << "length of this line : " <<n<<endl;	
-			string temp; 
-			for (i = 0; i < n ; ++i)	
-			{
-				if (sLine[i] == '@')
-				{	i++;
-					while( sLine[i] != '\n')
-						temp += sLine[i++];
-				}
-
-			}
-			cout << "temp variable is : "<<temp <<endl;
-			if (symbolTable.find(temp) == symbolTable.end())
-			{
-				symbolTable.insert({temp, nxt++}); 
-			}	
-		}
-		binFile.close();
-	openTempFile.close();
-
-	}
-	else
-		cout<< "Coulnt' open the temp file : "<< argv[2]<<endl;
-	completeSymbolTable();
 	return 0;
 }
