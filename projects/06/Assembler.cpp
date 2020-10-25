@@ -21,17 +21,42 @@ map< string, int > symbolTable = {
 	{ "R15", 15 },
 	{ "SCREEN", 16384 },
 	{ "KBD", 24576 },
-	{ "SP", 1 },
+	{ "SP", 0 },
 	{ "LCL", 1 },
 	{ "ARG", 2 },
 	{ "THIS", 3 },
 	{ "THAT", 4 }
 };
 
+void parse(){
+	cout <<"beginning Parser. phase 1..............\n";
+		string line;
+		int lineNo = 0;
+		while( getline(openTempFile, line))
+		{  	cout << line << endl;
+			n = line.size(); cout << "length of this line : " <<n<<endl;	
+			string temp; 
+			for (i = 0; i < n ; ++i)	
+			{
+				if (line[i] == '(')
+				{	i++;
+					while( line[i] != ')')
+						temp += line[i++];
+				}
+			}
+			symbolTable.insert({temp, lineNo}); 
+			lineNo++;		
+		}
+		openTempFile.close();
+
+
+}
+
 void completeSymbolTable(){
 	int len = symbolTable.size();
 	for (auto iter:symbolTable) //.begin(); iter<symbolTable.end(); iter++)
-		cout<< iter.first << " : " << iter.second<<endl;
+	{	cout<<"\""<< iter.first << "\" : " << iter.second<<"|"<<endl;
+	}
 }
 
 string asm2bin(string &inp){
@@ -62,7 +87,7 @@ string asm2bin(string &inp){
 		string dest;
 		int iter=0;
 		for (; iter<len ; iter++){
-			if (inp[iter] == '=')
+			if ( (inp[iter] == '=') || (inp[iter] == ';'))
 				break;
 			else
 				dest += inp[iter];
@@ -87,10 +112,13 @@ string asm2bin(string &inp){
 		cout <<"DEST done!! ans so far : "<<ans<<endl<<" iter : inp[iter] = "<<iter<<":"<<inp[iter] <<"\n\n";
 		
 		// comp logic
-		iter +=1;		
-			string comp;
+		string comp;
+		if (inp[iter] != ';' )
+		{ 	
+			iter +=1;		
+
 			for (; iter<len ; iter++){
-				if ( (inp[iter] == ';') || (inp[iter] == 10 ) || (inp[iter] == 13)) //newline
+				if ( (inp[iter] == ';') || (inp[iter] == 10 ) || (inp[iter] == 13) || (inp[iter] ==32)) //newline or space
 					break;
 				else
 					comp += inp[iter];
@@ -98,6 +126,9 @@ string asm2bin(string &inp){
 			cout << "comp is :" << comp <<", length is :" << comp.size() <<endl;
 			//ans += "111"; //012	  //3  4  5  6  7  8  9   10 11 12   13 14 15
 			//ans += "0000000000000"; //a c1 c2 c3 c4 c5 c6 = d1 d2 d3 ; j1 j2 j3
+		}	
+		else comp=dest;	
+
 			cout << "ans before comp : " << ans << endl;		
 		
 			if ( comp == "0") ans[4] = ans[6] = ans[8] = '1';
@@ -134,8 +165,8 @@ string asm2bin(string &inp){
 			if ( comp == "D+A") ans[8] = '1';
 			if ( comp == "D+M") ans[3] = ans[8] = '1';
 
-			if ( comp == "D-A") ans[8] = ans[9] = '1';
-			if ( comp == "D-M") ans[3] = ans[8] = ans[9] = '1';
+			if ( comp == "D-A") ans[5] = ans[8] = ans[9] = '1';
+			if ( comp == "D-M") ans[3] = ans[5] = ans[8] = ans[9] = '1';
 
 			if ( comp == "A-D") ans[7] = ans[8] = ans[9] = '1';
 			if ( comp == "M-D") ans[3] = ans[7] = ans[8] = ans[9] = '1';
@@ -146,12 +177,13 @@ string asm2bin(string &inp){
 			if ( comp == "D|A") ans[5] = ans[7] = ans[9] = '1';
 			if ( comp == "D|M") ans[3] = ans[5] = ans[7] = ans[9] = '1';
 		cout <<"COMP done!! ans so far : "<<ans<<endl <<" iter : inp[iter] = "<<iter<<":"<<inp[iter] <<"\n\n";
+		
 				
 		if (inp[iter] == ';')
 		{		
 			// jump logic
 			string jump;
-			for (; iter<len ; iter++){
+			for (iter++; iter<len ; iter++){
 				if (inp[iter] == '\n')
 					break;
 				else
@@ -171,10 +203,8 @@ string asm2bin(string &inp){
 			if ( jump == "JLE") ans[13] = ans[14] = '1';
 
 			if ( jump == "JMP") ans[13] = ans[14] = ans[15] = '1';
-
 		}
-		cout << "FINAL ans: " << ans<< "\n#### #### #### #### #### #### #### ####\n";
-		
+		cout << "FINAL ans: " << ans<< "\n#### #### #### #### #### #### #### ####\n";	
 	}
 	return ans;
 }
@@ -192,7 +222,6 @@ int main(int argc, char **argv)
 		cout << argv[i] << "\n"; 
 
 	ifstream asmFile(argv[1]); // .asm file
-	
 	if (asmFile.is_open())
 	{
 		ofstream tempFile; // .temp file 
@@ -209,7 +238,8 @@ int main(int argc, char **argv)
 				if (line[i] == '/' && line[i] == line[i+1])
 					break;				
 				else
-					temp += line[i];
+					if (line[i]!= ' ') // whitespace
+						temp += line[i];
 			}
 			if ( temp.size() > 1){  //at least 2 characters
 				//cout<< typeid(temp).name()<<endl;
@@ -229,8 +259,7 @@ int main(int argc, char **argv)
 		string line;
 		int lineNo = 0;
 		while( getline(openTempFile, line))
-		{  	lineNo++;
-			cout << line << endl;
+		{  	cout << line << endl;
 			n = line.size(); cout << "length of this line : " <<n<<endl;	
 			string temp; 
 			for (i = 0; i < n ; ++i)	
@@ -240,9 +269,9 @@ int main(int argc, char **argv)
 					while( line[i] != ')')
 						temp += line[i++];
 				}
-
 			}
 			symbolTable.insert({temp, lineNo}); 
+			lineNo++;		
 		}
 		openTempFile.close();
 
@@ -251,30 +280,54 @@ int main(int argc, char **argv)
 		ofstream binFile;
 		binFile.open(argv[3]); //open the .hack file given by argv
 		openTempFile.open(argv[2]);
-		while( getline(openTempFile, sLine))
-		{	cout <<"beginning Parser. phase 2..............\n";
 
+		cout <<"beginning Parser. phase 2..............\n";
+		while( getline(openTempFile, sLine))
+		{	bool aIns = false, cIns = false;
 		  	cout << sLine << endl;
 			n = sLine.size(); cout << "length of this line : " <<n<<endl;	
 			string temp; 
-			for (i = 0; i < n ; ++i)	
+			for (int i = 0; i < n ; ++i)	
 			{
 				if (sLine[i] == '@')
-				{	i++;
-					while( sLine[i] != '\n')
-						temp += sLine[i++];
+				{	
+					aIns = true;
+					for(i++; (sLine[i] != 13) && (sLine[i] != 10) && (i<n) ;i++) // \n and \r
+						temp += sLine[i];
 				}
-
+				else
+				if (sLine[i] != '(' && sLine[i] != 32) // space 
+				{	
+					cIns = true;
+					for(; (sLine[i] != 13) && (sLine[i] != 10) && (sLine[i]!=32) && (i<n) ;i++)
+						temp += sLine[i];
+				}
+				else				
+					if (sLine[i] == '(') break;
 			}
-			cout << "temp variable is : "<<temp <<endl;
-			if (symbolTable.find(temp) == symbolTable.end())
-			{
-				symbolTable.insert({temp, nxt++}); 
+			cout << "temp variable is : \""<<temp <<"\""<<endl;					
+			if (aIns) // A-ins
+			{	try
+				{	int ins = stoi(temp);
+					string sTmpAIns; sTmpAIns+='@'; sTmpAIns += temp;
+					binFile << asm2bin(sTmpAIns) << "\n"; // a Ins start with '@'
+				}
+				catch(...){ // we need to add variable
+				if (symbolTable.find(temp) == symbolTable.end())
+				{	
+					symbolTable.insert({temp, nxt++}); 
+					cout << "inserted into symbol tabel : "<< symbolTable[temp]<<endl;
+				}
+				string sTmpAIns; sTmpAIns+='@'; sTmpAIns += to_string(symbolTable[temp]); cout<<"symbol : "<< symbolTable[temp]<<" sTemp :" <<sTmpAIns<<endl;
+				binFile << asm2bin(sTmpAIns) << "\n"; // a Ins start with '@'
+				}
 			}	
+			else	if (cIns) // C-ins
+					binFile << asm2bin(temp) << "\n"; // c Ins format: "dest = comp; JMP"
 		}
+
 		binFile.close();
 	openTempFile.close();
-
 	}
 	else
 		cout<< "Coulnt' open the temp file : "<< argv[2]<<endl;
